@@ -1,0 +1,26 @@
+.lightbox,
+.lightbox-overlay {
+    height: 100%;
+    left: 0;
+    position: fixed;
+    top: 0;
+    display: none;
+    width: 100%;
+}
+
+.lightbox-overlay {
+    background-color: #000;
+    opacity: 0.5;
+}
+
+.is-visible {
+    display: block;
+}
+
+.photo-container {
+    text-align: center;
+}
+
+.photo-container img {
+    height: 90%;
+}
