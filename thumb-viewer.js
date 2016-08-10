@@ -4,67 +4,81 @@ var PHOTOSET_ID = '72157672198006585';
 var USER_ID = '31786794%40N07';
 var PAGE_SIZE = '20';
 
+var PHOTO_SIZE_THUMB = 'm';
+var PHOTO_SIZE_LIGHTBOX = 'b';
 
 function getPhotoUrl(photo, size) {
     return 'https://farm' + photo.farm + '.staticflickr.com/' + photo.server + '/'
         + photo.id + '_' + photo.secret + '_' + size + '.jpg';
 }
 
-function Collection(rawPhotosResp) {
+function Collection(application, photosetResp) {
+
+    document.querySelector('h1').innerText = photosetResp.title;
+    document.querySelector('.author').innerText = 'by ' + photosetResp.ownername;
+
+    var photos = photosetResp.photo;
+
+    this.getPhoto = function(index) {
+        return photos[index];
+    };
+
+    this.getNumPhotos = function() {
+        return photos.length;
+    };
+
+    this.renderThumbs = function() {
+        photos.forEach(function(photo, i) {
+            var photoThumbEl = document.createElement('img');
+            photoThumbEl.src = getPhotoUrl(photo, PHOTO_SIZE_THUMB);
+
+            photoThumbEl.addEventListener('click', function() {
+                application.lightbox.showLightbox(photo, i);
+            });
+
+            document.querySelector('.main-container').appendChild(photoThumbEl);
+        });
+    };
+
+}
+
+function Lightbox(application) {
 
     var lightboxEl = document.querySelector('.lightbox');
     var overlayEl = document.querySelector('.lightbox-overlay');
     var mainPhotoEl = document.querySelector('.photo-container');
 
-    this.photos = rawPhotosResp;
-    this.lightboxPhoto = null;
-    this.lightboxPhotoEl = null;
+    var photo = null;
+    var photoEl = null;
+    var photoIndex = 0;
 
-    this.getPhoto = function(index) {
-        return this.photos[index];
-    }.bind(this);
-
-    this.renderThumbs = function() {
-        this.photos.forEach(function(photo) {
-            var photoThumbEl = document.createElement('img');
-            photoThumbEl.src = getPhotoUrl(photo, 'm');
-
-            photoThumbEl.addEventListener('click', function() {
-                this.showLightbox(photo);
-            }.bind(this));
-
-            document.querySelector('.main-container').appendChild(photoThumbEl);
-        }.bind(this));
-    }.bind(this);
-
-    this.showNext = function() {
-        var photoIndex = this.photos.indexOf(this.lightboxPhoto);
-        this.lightboxPhoto = this.getPhoto(photoIndex + 1);
-        this.lightboxPhotoEl.src = getPhotoUrl(this.lightboxPhoto, 'b');
-    }.bind(this);
-
-    this.showPrev = function() {
-        var photoIndex = this.photos.indexOf(this.lightboxPhoto);
-        this.lightboxPhoto = this.getPhoto(photoIndex - 1);
-        this.lightboxPhotoEl.src = getPhotoUrl(this.lightboxPhoto, 'b');
-    }.bind(this);
-
-    this.showLightbox = function(photo) {
-        this.lightboxPhoto = photo;
-        if (!this.lightboxPhotoEl) {
-            this.lightboxPhotoEl = document.createElement('img');
-            mainPhotoEl.appendChild(this.lightboxPhotoEl);
+    function checkBounds() {
+        if (photoIndex === 0) {
+            document.querySelector('.prev-btn').classList.add('is-hidden');
+        } else if (photoIndex + 1 === application.collection.getNumPhotos()) {
+            document.querySelector('.next-btn').classList.add('is-hidden');
+        } else {
+            document.querySelector('.prev-btn').classList.remove('is-hidden');
+            document.querySelector('.next-btn').classList.remove('is-hidden');
         }
-        this.lightboxPhotoEl.src = getPhotoUrl(photo, 'b');
+    }
 
-        lightboxEl.classList.add('is-visible');
-        overlayEl.classList.add('is-visible');
-    }.bind(this);
+    function showNext() {
+        photo = application.collection.getPhoto(++photoIndex);
+        photoEl.src = getPhotoUrl(photo, PHOTO_SIZE_LIGHTBOX);
+        checkBounds();
+    }
 
-    this.hideLightbox = function() {
+    function showPrev() {
+        photo = application.collection.getPhoto(--photoIndex);
+        photoEl.src = getPhotoUrl(photo, PHOTO_SIZE_LIGHTBOX);
+        checkBounds();
+    }
+
+    function hideLightbox() {
         lightboxEl.classList.remove('is-visible');
         overlayEl.classList.remove('is-visible');
-    };
+    }
 
     function isClickOutside(target) {
         if (target.classList.contains('prev-btn')
@@ -75,26 +89,45 @@ function Collection(rawPhotosResp) {
         return true;
     }
 
+    this.showLightbox = function(photo, index) {
+        photo = photo;
+        photoIndex = index;
+        if (!photoEl) {
+            photoEl = document.createElement('img');
+            mainPhotoEl.appendChild(photoEl);
+        }
+        photoEl.src = getPhotoUrl(photo, PHOTO_SIZE_LIGHTBOX);
+
+        lightboxEl.classList.add('is-visible');
+        overlayEl.classList.add('is-visible');
+        checkBounds();
+    };
+
     lightboxEl.addEventListener('click', function(event) {
         var target = event.target;
 
         if (isClickOutside(target)) {
-            this.hideLightbox();
+            hideLightbox();
             return;
         }
 
         if (target.classList.contains('prev-btn')) {
-            this.showPrev();
+            showPrev();
             return;
         }
 
         if (target.classList.contains('next-btn')) {
-            this.showNext();
+            showNext();
             return;
         }
+    });
 
-    }.bind(this));
+}
 
+function Application(photoset) {
+    this.lightbox = new Lightbox(this);
+    this.collection = new Collection(this, photoset);
+    this.collection.renderThumbs();
 }
 
 var xhttp = new XMLHttpRequest();
@@ -110,14 +143,7 @@ xhttp.onreadystatechange = function() {
             return;
         }
 
-        var photoset = resp.photoset;
-
-        document.querySelector('h1').innerText = photoset.title;
-        document.querySelector('.author').innerText = 'by ' + photoset.ownername;
-
-        var photos = photoset.photo;
-        var collection = new Collection(photos);
-        collection.renderThumbs();
+        var app = new Application(resp.photoset);
     }
 };
 
