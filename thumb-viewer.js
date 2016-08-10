@@ -4,74 +4,96 @@ var PHOTOSET_ID = '72157672198006585';
 var USER_ID = '31786794%40N07';
 var PAGE_SIZE = '20';
 
-var lightboxEl = document.querySelector('.lightbox');
-var overlayEl = document.querySelector('.lightbox-overlay');
-var mainPhotoEl = document.querySelector('.photo-container');
 
-
-function showLightbox(photo) {
-    var mainPhoto = document.createElement('img');
-    mainPhoto.src = photo.getUrl('b');
-
-    mainPhotoEl.appendChild(mainPhoto);
-    lightboxEl.classList.add('is-visible');
-    overlayEl.classList.add('is-visible');
-};
-
-function hideLightbox() {
-    lightboxEl.classList.remove('is-visible');
-    overlayEl.classList.remove('is-visible');
-    mainPhotoEl.innerHTML = '';
-};
-
-var closeLightboxBtn = document.querySelector('.close-lightbox');
-closeLightboxBtn.addEventListener('click', function(e) {
-    hideLightbox();
-});
-
-function Photo(rawPhotoObj, index) {
-
-    this.index = index;
-    this.farm = rawPhotoObj.farm;
-    this.server = rawPhotoObj.server;
-    this.id = rawPhotoObj.id;
-    this.secret = rawPhotoObj.secret;
-
-    this.getUrl = function(size) {
-        return 'https://farm' + this.farm + '.staticflickr.com/' + this.server + '/'
-            + this.id + '_' + this.secret + '_' + size + '.jpg';
-    }.bind(this);
-
-    this.getThumbEl = function() {
-        var imgEl = document.createElement('img');
-        imgEl.className = 'thumb';
-        imgEl.src = this.getUrl('m');
-
-        imgEl.addEventListener('click', function(e) {
-            showLightbox(this);
-        }.bind(this));
-
-        return imgEl;
-    }.bind(this);
-
+function getPhotoUrl(photo, size) {
+    return 'https://farm' + photo.farm + '.staticflickr.com/' + photo.server + '/'
+        + photo.id + '_' + photo.secret + '_' + size + '.jpg';
 }
 
 function Collection(rawPhotosResp) {
 
-    this.photos = rawPhotosResp.map(function(rawPhotoObj, i) {
-        return new Photo(rawPhotoObj, i);
-    });
+    var lightboxEl = document.querySelector('.lightbox');
+    var overlayEl = document.querySelector('.lightbox-overlay');
+    var mainPhotoEl = document.querySelector('.photo-container');
 
-    this.renderThumbs = function() {
-        this.photos.forEach(function(photo) {
-            var photoThumbEl = photo.getThumbEl();
-            document.querySelector('.main-container').appendChild(photoThumbEl);
-        });
-    }.bind(this);
+    this.photos = rawPhotosResp;
+    this.lightboxPhoto = null;
+    this.lightboxPhotoEl = null;
 
     this.getPhoto = function(index) {
         return this.photos[index];
     }.bind(this);
+
+    this.renderThumbs = function() {
+        this.photos.forEach(function(photo) {
+            var photoThumbEl = document.createElement('img');
+            photoThumbEl.src = getPhotoUrl(photo, 'm');
+
+            photoThumbEl.addEventListener('click', function() {
+                this.showLightbox(photo);
+            }.bind(this));
+
+            document.querySelector('.main-container').appendChild(photoThumbEl);
+        }.bind(this));
+    }.bind(this);
+
+    this.showNext = function() {
+        var photoIndex = this.photos.indexOf(this.lightboxPhoto);
+        this.lightboxPhoto = this.getPhoto(photoIndex + 1);
+        this.lightboxPhotoEl.src = getPhotoUrl(this.lightboxPhoto, 'b');
+    }.bind(this);
+
+    this.showPrev = function() {
+        var photoIndex = this.photos.indexOf(this.lightboxPhoto);
+        this.lightboxPhoto = this.getPhoto(photoIndex - 1);
+        this.lightboxPhotoEl.src = getPhotoUrl(this.lightboxPhoto, 'b');
+    }.bind(this);
+
+    this.showLightbox = function(photo) {
+        this.lightboxPhoto = photo;
+        if (!this.lightboxPhotoEl) {
+            this.lightboxPhotoEl = document.createElement('img');
+            mainPhotoEl.appendChild(this.lightboxPhotoEl);
+        }
+        this.lightboxPhotoEl.src = getPhotoUrl(photo, 'b');
+
+        lightboxEl.classList.add('is-visible');
+        overlayEl.classList.add('is-visible');
+    }.bind(this);
+
+    this.hideLightbox = function() {
+        lightboxEl.classList.remove('is-visible');
+        overlayEl.classList.remove('is-visible');
+    };
+
+    function isClickOutside(target) {
+        if (target.classList.contains('prev-btn')
+            || target.classList.contains('next-btn')
+            || target.classList.contains('photo-container')) {
+            return false;
+        }
+        return true;
+    }
+
+    lightboxEl.addEventListener('click', function(event) {
+        var target = event.target;
+
+        if (isClickOutside(target)) {
+            this.hideLightbox();
+            return;
+        }
+
+        if (target.classList.contains('prev-btn')) {
+            this.showPrev();
+            return;
+        }
+
+        if (target.classList.contains('next-btn')) {
+            this.showNext();
+            return;
+        }
+
+    }.bind(this));
 
 }
 
