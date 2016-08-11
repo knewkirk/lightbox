@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Lightbox Exercise</title>
+    <link rel="stylesheet" href="./css/page.css" type="text/css" />
+    <link rel="stylesheet" href="./css/collection.css" type="text/css" />
+    <link rel="stylesheet" href="./css/lightbox.css" type="text/css" />
+    <link rel="stylesheet" href="./css/loading-indicator.css" type="text/css" />
+</head>
+
+<body>
+    <div class="thumb-collection">
+        <header>
+            <h1 class="album-title is-loading">Loading...</h1>
+            <small class="album-author"></small>
+        </header>
+        <div class="thumbs-container is-loading">
+            <div class="err-apology is-hidden">
+                Sorry, something went wrong. Check the request params and try again.
+            </div>
+            <div class="loading-indicator">
+                <div></div><div></div><div></div>
+            </div>
+        </div>
+    </div>
+    <div class="lightbox-overlay"></div>
+    <div class="lightbox-content">
+        <button class="close-lightbox-btn" title="Close Lightbox">
+            &times;
+        </button>
+        <div class="prev-btn-container">
+            <button class="prev-btn" title="Show Previous Photo">
+                &lt;
+            </button>
+        </div>
+        <div class="lightbox-center-container">
+            <div class="lightbox-photo-container">
+                <div class="loading-indicator">
+                    <div></div><div></div><div></div>
+                </div>
+            </div>
+            <h2 class="lightbox-photo-title"></h2>
+        </div>
+        <div class="next-btn-container">
+            <button class="next-btn" title="Show Next Photo">
+                &gt;
+            </button>
+        </div>
+    </div>
+
+<script src="./js/collection.js"></script>
+<script src="./js/lightbox.js"></script>
+<script src="./js/application.js"></script>
+
+</body>
+</html>
