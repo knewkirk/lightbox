@@ -1,0 +1,113 @@
+/*
+ * Lightbox Styles
+ *  Contains everything related to the lightbox
+ *  and its functionality like buttons and titles
+ *  and such.
+ */
+
+.lightbox-overlay {
+    background-color: #000;
+    display: none;
+    height: 100%;
+    opacity: 0.8;
+    position: fixed;
+    top: 0;
+    width: 100%;
+}
+.lightbox-overlay.is-visible {
+    display: block;
+}
+
+.lightbox-content {
+    align-items: center;
+    display: none;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    width: 100%;
+}
+.lightbox-content.is-visible {
+    display: flex;
+}
+
+.lightbox-content .prev-btn-container,
+.lightbox-content .next-btn-container {
+    flex: 1 4 0;
+}
+.lightbox-content .prev-btn-container {
+    padding-right: 20px;
+    text-align: right;
+}
+.lightbox-content .next-btn-container {
+    padding-left: 20px;
+    text-align: left;
+}
+
+.lightbox-center-container {
+    display: flex;
+    height: 100%;
+    flex: 5 1 auto;
+    flex-direction: column;
+    text-align: center;
+}
+
+.lightbox-center-container .lightbox-photo-title {
+    color: #FFF;
+    flex: 1 1 0;
+    font-weight: normal;
+    margin: 15px 0 20px;
+    opacity: 0.5;
+    transition: opacity 0.3s;
+}
+.lightbox-center-container .lightbox-photo-title:hover {
+    opacity: 1;
+}
+
+.lightbox-photo-container {
+    flex: 10 0 auto;
+    margin-top: 30px;
+    position: relative;
+}
+
+.lightbox-photo-container img {
+    bottom: 0;
+    box-shadow: 0 0 70px 5px rgba(0, 0, 0, 0.5);
+    height: auto;
+    left: 0;
+    margin: auto;
+    max-height: 100%;
+    max-width: 100%;
+    opacity: 1;
+    position: absolute;
+    right: 0;
+    top: 0;
+    transition: opacity 0.2s;
+    width: auto;
+}
+.lightbox-photo-container.is-loading img {
+    opacity: 0;
+}
+
+.lightbox-content button {
+    background: none;
+    border: none;
+    color: #FFF;
+    cursor: pointer;
+    font-size: 5em;
+    opacity: 0.3;
+    transition: color 0.2s, transform 0.2s;
+}
+.lightbox-content button:focus {
+    opacity: 1;
+    outline: none;
+}
+.lightbox-content button:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.lightbox-content .close-lightbox-btn {
+    position: absolute;
+    right: 20px;
+    top: 0;
+}
