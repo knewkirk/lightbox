@@ -1,11 +1,17 @@
+var XHR_STATE_DONE = 4;
+var HTTP_STATUS_OK = 200;
 
 var API_KEY = 'bf85b02743f27fd3522b110409be5d29';
 var PHOTOSET_ID = '72157672198006585';
 var USER_ID = '31786794%40N07';
-var PAGE_SIZE = '20';
+var PAGE_SIZE = '50';
 
 var PHOTO_SIZE_THUMB = 'm';
-var PHOTO_SIZE_LIGHTBOX = 'b';
+var PHOTO_SIZE_LIGHTBOX = 'h';
+
+var LOADING_CLASS = 'is-loading';
+var HIDDEN_CLASS = 'is-hidden';
+var VISIBLE_CLASS = 'is-visible';
 
 function getPhotoUrl(photo, size) {
     return 'https://farm' + photo.farm + '.staticflickr.com/' + photo.server + '/'
@@ -14,10 +20,18 @@ function getPhotoUrl(photo, size) {
 
 function Collection(application, photosetResp) {
 
-    document.querySelector('h1').innerText = photosetResp.title;
-    document.querySelector('.author').innerText = 'by ' + photosetResp.ownername;
-
     var photos = photosetResp.photo;
+    var collectionEl = document.querySelector('.thumb-collection');
+    var albumTitleEl = collectionEl.querySelector('.album-title');
+    var albumAuthorEl = collectionEl.querySelector('.album-author');
+    var thumbsContainerEl = collectionEl.querySelector('.thumbs-container');
+
+    function initThumbsView() {
+        albumTitleEl.classList.remove(LOADING_CLASS);
+        albumTitleEl.innerText = '\u201C' + photosetResp.title + '\u201D';
+        albumAuthorEl.innerText = 'by ' + photosetResp.ownername;
+        thumbsContainerEl.classList.remove(LOADING_CLASS);
+    }
 
     this.getPhoto = function(index) {
         return photos[index];
@@ -28,25 +42,39 @@ function Collection(application, photosetResp) {
     };
 
     this.renderThumbs = function() {
+
+        var photosToLoad = photos.length;
         photos.forEach(function(photo, i) {
             var photoThumbEl = document.createElement('img');
             photoThumbEl.src = getPhotoUrl(photo, PHOTO_SIZE_THUMB);
+            photoThumbEl.className = 'thumb';
+            photoThumbEl.title = photo.title;
 
             photoThumbEl.addEventListener('click', function() {
                 application.lightbox.showLightbox(photo, i);
             });
 
-            document.querySelector('.main-container').appendChild(photoThumbEl);
+            photoThumbEl.addEventListener('load', function() {
+                if (--photosToLoad === 0) {
+                    initThumbsView();
+                }
+            });
+
+            thumbsContainerEl.appendChild(photoThumbEl);
         });
+
     };
 
 }
 
 function Lightbox(application) {
 
-    var lightboxEl = document.querySelector('.lightbox');
+    var lightboxEl = document.querySelector('.lightbox-content');
     var overlayEl = document.querySelector('.lightbox-overlay');
-    var mainPhotoEl = document.querySelector('.photo-container');
+    var mainPhotoEl = lightboxEl.querySelector('.lightbox-photo-container');
+    var photoTitleEl = lightboxEl.querySelector('.lightbox-photo-title');
+    var nextBtnEl = lightboxEl.querySelector('.next-btn');
+    var prevBtnEl = lightboxEl.querySelector('.prev-btn');
 
     var photo = null;
     var photoEl = null;
@@ -54,36 +82,42 @@ function Lightbox(application) {
 
     function checkBounds() {
         if (photoIndex === 0) {
-            document.querySelector('.prev-btn').classList.add('is-hidden');
+            prevBtnEl.classList.add(HIDDEN_CLASS);
         } else if (photoIndex + 1 === application.collection.getNumPhotos()) {
-            document.querySelector('.next-btn').classList.add('is-hidden');
+            nextBtnEl.classList.add(HIDDEN_CLASS);
         } else {
-            document.querySelector('.prev-btn').classList.remove('is-hidden');
-            document.querySelector('.next-btn').classList.remove('is-hidden');
+            prevBtnEl.classList.remove(HIDDEN_CLASS);
+            nextBtnEl.classList.remove(HIDDEN_CLASS);
         }
+    }
+
+    function showPhoto(photo) {
+        photoEl.src = getPhotoUrl(photo, PHOTO_SIZE_LIGHTBOX);
+        mainPhotoEl.classList.add(LOADING_CLASS);
+        photoTitleEl.innerText = '"' + photo.title + '"';
+        checkBounds();
     }
 
     function showNext() {
         photo = application.collection.getPhoto(++photoIndex);
-        photoEl.src = getPhotoUrl(photo, PHOTO_SIZE_LIGHTBOX);
-        checkBounds();
+        showPhoto(photo);
     }
 
     function showPrev() {
         photo = application.collection.getPhoto(--photoIndex);
-        photoEl.src = getPhotoUrl(photo, PHOTO_SIZE_LIGHTBOX);
-        checkBounds();
+        showPhoto(photo);
     }
 
     function hideLightbox() {
-        lightboxEl.classList.remove('is-visible');
-        overlayEl.classList.remove('is-visible');
+        lightboxEl.classList.remove(VISIBLE_CLASS);
+        overlayEl.classList.remove(VISIBLE_CLASS);
     }
 
     function isClickOutside(target) {
         if (target.classList.contains('prev-btn')
             || target.classList.contains('next-btn')
-            || target.classList.contains('photo-container')) {
+            || target.classList.contains('title')
+            || target.nodeName === 'IMG') {
             return false;
         }
         return true;
@@ -94,13 +128,16 @@ function Lightbox(application) {
         photoIndex = index;
         if (!photoEl) {
             photoEl = document.createElement('img');
+            photoEl.addEventListener('load', function() {
+                mainPhotoEl.classList.remove(LOADING_CLASS);
+            });
             mainPhotoEl.appendChild(photoEl);
         }
-        photoEl.src = getPhotoUrl(photo, PHOTO_SIZE_LIGHTBOX);
 
-        lightboxEl.classList.add('is-visible');
-        overlayEl.classList.add('is-visible');
-        checkBounds();
+        showPhoto(photo);
+
+        lightboxEl.classList.add(VISIBLE_CLASS);
+        overlayEl.classList.add(VISIBLE_CLASS);
     };
 
     lightboxEl.addEventListener('click', function(event) {
@@ -132,7 +169,7 @@ function Application(photoset) {
 
 var xhttp = new XMLHttpRequest();
 xhttp.onreadystatechange = function() {
-    if (xhttp.readyState == 4 && xhttp.status == 200) {
+    if (xhttp.readyState == XHR_STATE_DONE && xhttp.status == HTTP_STATUS_OK) {
         var resp = xhttp.responseText;
         if (!resp) {
             return;

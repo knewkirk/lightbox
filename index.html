@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -5,21 +6,39 @@
 </head>
 
 <body>
-    <h1>Loading...</h1>
-    <span class="author"></span>
-    <div class="main-container">
-        <!-- <SPINNER> -->
+    <div class="thumb-collection">
+        <header>
+            <h1 class="album-title is-loading">Loading...</h1>
+            <small class="album-author"></small>
+        </header>
+        <div class="thumbs-container is-loading">
+            <div class="loading-indicator">
+                <div></div><div></div><div></div>
+            </div>
+        </div>
     </div>
     <div class="lightbox-overlay"></div>
-    <div class="lightbox">
-        <div class="header">
-            <h2 class="title"></h2>
-            <button class="close-lightbox-btn">X</button>
+    <div class="lightbox-content">
+        <button class="close-lightbox-btn" title="Close Lightbox">
+            &times;
+        </button>
+        <div class="prev-btn-container">
+            <button class="prev-btn" title="Show Previous Photo">
+                &lt;
+            </button>
         </div>
-        <div class="lightbox-content">
-            <button class="prev-btn">&lt;</button>
-            <span class="photo-container"></span>
-            <button class="next-btn">&gt;</button>
+        <div class="lightbox-center-container">
+            <div class="lightbox-photo-container">
+                <div class="loading-indicator">
+                    <div></div><div></div><div></div>
+                </div>
+            </div>
+            <h2 class="lightbox-photo-title"></h2>
+        </div>
+        <div class="next-btn-container">
+            <button class="next-btn" title="Show Next Photo">
+                &gt;
+            </button>
         </div>
     </div>
 </body>
