@@ -12,8 +12,8 @@ var CONSTANTS = {
 
     API_KEY: 'bf85b02743f27fd3522b110409be5d29',
     PHOTOSET_ID: '72157672198006585',
-    USER_ID: '31786794%40N07',
     PAGE_SIZE: '50',
+    PAGE_NUM: '1',
 
     PHOTO_SIZE_THUMB: 'm',
     PHOTO_SIZE_LIGHTBOX: 'h',
@@ -81,8 +81,8 @@ function Application(photoset) {
     var url = 'https://api.flickr.com/services/rest/?method=flickr.photosets.getPhotos' +
         '&api_key=' + CONSTANTS.API_KEY +
         '&photoset_id=' + CONSTANTS.PHOTOSET_ID +
-        '&user_id=' + CONSTANTS.USER_ID +
         '&per_page=' + CONSTANTS.PAGE_SIZE +
+        '&page=' + CONSTANTS.PAGE_NUM +
         '&format=json' +
         '&nojsoncallback=1';
 
