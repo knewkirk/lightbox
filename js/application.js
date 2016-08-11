@@ -36,6 +36,14 @@ function getPhotoUrl(photo, size) {
 }
 
 /**
+ * Displays the error message on the page
+ * @returns {void}
+ */
+function showErrMessage() {
+    document.querySelector('.err-apology').classList.remove(CONSTANTS.HIDDEN_CLASS);
+}
+
+/**
  * The Application, consisting of a Lightbox and a Collection
  * We tell the collection to render the thumbs here to make it
  * explicit how the app starts up.
@@ -56,11 +64,13 @@ function Application(photoset) {
 
             var resp = xhttp.responseText;
             if (!resp) {
+                showErrMessage();
                 return;
             }
 
             resp = JSON.parse(resp);
             if (!resp || !resp.photoset) {
+                showErrMessage();
                 return;
             }
 
